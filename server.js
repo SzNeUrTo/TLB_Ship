@@ -1,35 +1,90 @@
-var io = require('socket.io').listen(8080);
+var PYHTON_HOST = '127.0.0.1'
+var PYTHON_PORT = 8081
+var SOCKETIO_PORT = 8080
+var viewers = []
+var players = []
+var screenWidth = 800;
+var screenHeight = 600;
+var shipSize = 70;
+var shipSpeed = 5;
 
-io.sockets.on('connection', function(socket) {
-	console.log('connection on');
-	io.sockets.emit('menu', {pizza: 'Hawaiian pizza'});
+var gameStart = false;
+var gameRemainingTime = 120;
+var player = {
+	sid : '5600000000',
+	lifepoint : 3,
+	score : 0,
+	x : 0,
+	y : 0,
+	angle : 0,
+	checkVal : ''
+}
+var bulletSpeed = 20;
 
-	socket.on('order', function(pizza) {
-		console.log('You want to order menu ', pizza);
-	});
-	
-	socket.on('disconnect', function() {
-		io.sockets.emit('end call');
-	});
-});  
+var io = require('socket.io').listen(SOCKETIO_PORT);
+
+// use for simuserver.html
+//io.sockets.on('connection', function(socket) {
+//	io.sockets.emit('menu', {pizza: 'Hawaiian pizza'});
+//
+//	socket.on('order', function(pizza) {
+//		console.log('You want to order menu ', pizza);
+//	});
+//	
+//	socket.on('disconnect', function() {
+//		io.sockets.emit('end call');
+//	});
+//});  
 
 var net = require('net');  // node v0.10.21 (latest)
-var PYTHON = {HOST :'127.0.0.1', PORT :8081};
 
 net.createServer(function(socket) {
+	mySocket = socket
     console.log('CONNECTION for Python: ' + socket.remoteAddress +':'+ socket.remotePort);
 
-    var body = '';
-    socket.on('data', function(data) {
-        console.log('DATA ' + socket.remoteAddress + ' eiei : ' + data);
-        body += data;
+	console.log('=================== Game is Started... ======================');
+	var body = '';
+	socket.on('data', function(data) {
+		data = data + '';
+		cmd = data.split('|')[0];
+		data = data.split('|');
+		if (cmd == 'GameStart') {
+			console.log('GM CMD = GameStart');
+			gameStart = true;
+		}
+		else if (cmd  == 'JoinGame' && !gameStart) {
+			IP = data[1] + '';
+			ID = data[2] + '';
+			CheckVal = data[3] + '';
+			console.log('Join Game :' + IP + ' ' + ID + ' ' + CheckVal);
+			index = 'IP' + IP + ID + CheckVal;
+			if (players[index] == null) {
+				players[index] = player;
+				players[index].sid = ID;
+				players[index].LP = 3;
+				players[index].score = 0;
+				players[index].x = 200;
+				players[index].y = 200;
+				players[index].angle = 0;
+				players[index].checkVal = CheckVal;
+			}
+		}
+		else if (gameStart && cmd == 'Shooting') {
+			//player shooting true
+			console.log('shooting');
+		}
+		else if (gameStart && cmd == 'TurnShip') {
+			console.log('TurnShip ' + socket.remoteAddress);
+		}
+	    console.log('DATA ' + socket.remoteAddress + ' eiei : ' + data);
+	    body += data;
 		io.sockets.emit('menu', {pizza: (data+'')});
-    });
+	});
 
     socket.on('close', function(err) {
         console.log('finish transmitting data... ');
         console.log(body);
     });
-}).listen(PYTHON.PORT, PYTHON.HOST, function() {
-    console.log('----> socket to talk to python ' + PYTHON.HOST + ':' + PYTHON.PORT);
+}).listen(PYTHON_PORT, PYHTON_HOST, function() {
+    console.log('----> socket to talk to python ' + PYHTON_HOST + ':' + PYTHON_PORT);
 });
