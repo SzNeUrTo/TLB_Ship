@@ -26,8 +26,10 @@ var bulletSpeed = 20;
 var io = require('socket.io').listen(SOCKETIO_PORT);
 
 // use for simuserver.html
-//io.sockets.on('connection', function(socket) {
-//	io.sockets.emit('menu', {pizza: 'Hawaiian pizza'});
+io.sockets.on('connection', function(socket) {
+	viewers[viewers.length] = socket.id;
+	//console.log(socket.remoteAddress);
+	//io.sockets.emit('menu', {pizza: 'Hawaiian pizza'});
 //
 //	socket.on('order', function(pizza) {
 //		console.log('You want to order menu ', pizza);
@@ -35,8 +37,8 @@ var io = require('socket.io').listen(SOCKETIO_PORT);
 //	
 //	socket.on('disconnect', function() {
 //		io.sockets.emit('end call');
-//	});
-//});  
+	//});
+});  
 
 var net = require('net');  // node v0.10.21 (latest)
 
