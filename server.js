@@ -17,7 +17,8 @@ var player = {
 	x : 0,
 	y : 0,
 	angle : 0,
-	checkVal : ''
+	checkVal : '',
+	shooting : false
 }
 var bulletSpeed = 20;
 
@@ -67,10 +68,15 @@ net.createServer(function(socket) {
 				players[index].y = 200;
 				players[index].angle = 0;
 				players[index].checkVal = CheckVal;
+				players[index].shooting = false;
 			}
 		}
-		else if (gameStart && cmd == 'Shooting') {
+		else if (gameStart && cmd == 'ShootingToggle') {
 			//player shooting true
+			index = 'IP' + IP + ID + CheckVal;
+			players[index].shooting = !players[index].shooting;
+			
+			
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShip') {
