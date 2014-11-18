@@ -18,7 +18,8 @@ var player = {
 	y : 0,
 	angle : 0,
 	checkVal : '',
-	shooting : false
+	shooting : false,
+	turnship : false
 }
 var bulletSpeed = 20;
 
@@ -69,17 +70,18 @@ net.createServer(function(socket) {
 				players[index].angle = 0;
 				players[index].checkVal = CheckVal;
 				players[index].shooting = false;
+				players[index].turnship = false;
 			}
 		}
 		else if (gameStart && cmd == 'ShootingToggle') {
 			//player shooting true
 			index = 'IP' + IP + ID + CheckVal;
 			players[index].shooting = !players[index].shooting;
-			
-			
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShip') {
+			index = 'IP' + IP + ID + CheckVal;
+			players[index].turnship = !players[index].turnship;
 			console.log('TurnShip ' + socket.remoteAddress);
 		}
 	    console.log('DATA ' + socket.remoteAddress + ' eiei : ' + data);
