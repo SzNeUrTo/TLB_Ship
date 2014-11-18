@@ -55,11 +55,10 @@ net.createServer(function(socket) {
 			gameStart = true;
 		}
 		else if (cmd  == 'JoinGame' && !gameStart) {
-			IP = data[1] + '';
-			ID = data[2] + '';
-			CheckVal = data[3] + '';
-			console.log('Join Game :' + IP + ' ' + ID + ' ' + CheckVal);
-			index = 'IP' + IP + ID + CheckVal;
+			ID = data[1] + '';
+			CheckVal = data[2] + '';
+			console.log('Join Game :' + socket.remoteAddress + ' ' + ID + ' ' + CheckVal);
+			index = socket.remoteAddress + data[1] + data[2] + data[3];
 			if (players[index] == null) {
 				players[index] = player;
 				players[index].sid = ID;
@@ -75,12 +74,12 @@ net.createServer(function(socket) {
 		}
 		else if (gameStart && cmd == 'ShootingToggle') {
 			//player shooting true
-			index = 'IP' + IP + ID + CheckVal;
+			index = socket.remoteAddress + data[1] + data[2] + data[3];
 			players[index].shooting = !players[index].shooting;
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShip') {
-			index = 'IP' + IP + ID + CheckVal;
+			index = socket.remoteAddress + data[1] + data[2] + data[3];
 			players[index].turnship = !players[index].turnship;
 			console.log('TurnShip ' + socket.remoteAddress);
 		}
