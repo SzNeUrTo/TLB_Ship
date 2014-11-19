@@ -119,9 +119,28 @@ function initPlayerPositionAndAngle() {
 	console.log('initPlayerPositionAndAngle');
 }
 
-function sendDataPlayerToClient(cmd) {
-	for (var i=0; i<viewers.length; i++) {
-		io.sockets.socket(viewers[i]).emit(cmd, players);
+function sendDataToClient(cmd) {
+	cmd = cmd + '';
+	if (cmd == 'updatePlayers') {
+		emiter(cmd, players);
+	}
+	else if (cmd == 'updateBullets' || cmd == 'createBullet') {
+		emiter(cmd, bullets);
+	}
+	else if (cmd == 'GameStart' || cmd == 'GameEnd') {
+		emiter(cmd, cmd);
+	}
+	else if (cmd == 'removeBullets') {
+		emiter(cmd, 'GameStart');
+	}
+	else if (cmd == 'updateTimer') {
+		emiter(cmd, gameRemainingTime);
+	}
+}
+
+function emiter (cmd, obj) {
+	for (var i = 0; i < viewers.length; i++) {
+		io.sockets.socket(viewers[i]).emit(cmd, obj);
 	}
 }
 
@@ -236,11 +255,16 @@ function arrayRemoveAtIndex (arr, index) {
 }
 
 function updatePlayersPosition(i) {
-	var rad = angle * Math.PI / 180;
-	var newPositionX = players[players_index[i]].x + shipRunSpeed * Math.sin(rad);
-	var newPositionY = players[players_index[i]].y + shipRunSpeed * Math.cos(rad);
-	checkCollideBorder(i, newPositionX, newPositionY);
-
+	if (players[players_index[i]].lifepoint > 0) {
+		var rad = angle * Math.PI / 180;
+		var newPositionX = players[players_index[i]].x + shipRunSpeed * Math.sin(rad);
+		var newPositionY = players[players_index[i]].y + shipRunSpeed * Math.cos(rad);
+		checkCollideBorder(i, newPositionX, newPositionY);
+	}
+	else {
+		players[players_index[i]].x = -1000;
+		players[players_index[i]].y = -1000;
+	}
 }
 
 function checkCollideBorder(i, newPositionX, newPositionY) {
