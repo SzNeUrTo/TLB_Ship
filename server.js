@@ -12,6 +12,7 @@ var shipTurnSpeed = 5;
 var gameStart = false;
 var gameEnd = false;
 var gameRemainingTime = 180;
+var players_index = [];
 var player = {
 	sid : '5600000000',
 	lifepoint : 3,
@@ -59,6 +60,7 @@ net.createServer(function(socket) {
 			CheckVal = data[2] + '';
 			console.log('Join Game :' + socket.remoteAddress + ' ' + ID + ' ' + CheckVal);
 			index = socket.remoteAddress + data[1] + data[2] + data[3];
+			players_index[players_index.length] = index;
 			if (players[index] == null) {
 				players[index] = player;
 				players[index].sid = ID;
@@ -94,20 +96,28 @@ net.createServer(function(socket) {
 });
 
 function initPlayerPositionAndAngle() {
-	for (var i = 0; i < players.length; i++) {
+	for (var i = 0; i < players_index.length; i++) {
 		if (isNot_initPosition) {
-			players[i].x = screenWidth * i / size + shipSize;
-			players[i].y = screenHeight * i / size + shipSize;
-			players[i].angle = Math.floor((Math.random() * 360));
+			players[players_index[i]].x = screenWidth * i / size + shipSize;
+			players[players_index[i]].y = screenHeight * i / size + shipSize;
+			players[players_index[i]].angle = Math.floor((Math.random() * 360));
 		}
 		isNot_initPosition = true;
 	}
 	console.log('initPlayerPositionAndAngle');
 }
 
-function sendDataToClient (cmd) {
+function sendDataPlayerToClient(cmd) {
 	for (var i=0; i<viewers.length; i++) {
 		io.sockets.socket(viewers[i]).emit(cmd, players);
+	}
+}
+
+function updateTimer() {
+	if (LetGo) {
+		for (var i=0; i<viewers.length; i++) {
+			io.sockets.socket(viewers[i]).emit('updateTimer', gameRemainingTime--);
+		}
 	}
 }
 //Edit Here
@@ -115,15 +125,15 @@ setInterval(function () {
 	if (gameStart && !gameEnd) {
 		initPlayerPositionAndAngle();
 		if (isLetGo) {
-			// updatePlayerPosition();
+			updatePlayerStatus();
 			// updateBulletPosition();
 		}
 	}
 }, 12);
 
-// setInterval(function() {
-	//UpdateTimer
-// },1000);
+setInterval(function() {
+	updateTimer();
+},1000);
 
 
 
