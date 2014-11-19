@@ -32,12 +32,13 @@ while True :
     try :
         newLight = b.getLight() > 500;
         if newLight != oldLight :
-            s.sendall('TurnShip|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName()
+            s.sendall('TurnShip|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
 
         newSwitch = b.getSwitch()
         if newSwitch != oldSwitch :
-            s.sendall('ShootingToggle|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName()
-
+            if newSwitch :
+                s.sendall('ShootingToggle|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
+        oldSwitch = newSwitch
         print "Round %d ----> Switch state: %-8s | Light value: %d" % (round, state, light)
         round += 1
     except :

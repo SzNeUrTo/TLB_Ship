@@ -3,25 +3,24 @@ var PYTHON_PORT = 8081
 var SOCKETIO_PORT = 8080
 var viewers = []
 var players = []
+var players_index = [];
 var bullets = []
 var remover = []
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
-var bulletSize = 5;
 var bulletSpeed = 20;
 var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
 var gameStart = false;
 var gameEnd = false;
 var gameRemainingTime = 180;
-var players_index = [];
 var player = {
 	sid : '5600000000',
 	lifepoint : 3,
 	score : 0,
-	x : 0,
-	y : 0,
+	x : -1,
+	y : -1,
 	angle : 0,
 	checkVal : '',
 	shooting : false,
@@ -29,12 +28,11 @@ var player = {
 }
 
 var bullet = {
-	x : 0,
-	y : 0,
-	angle : 0,
-	owner : 'indexofplayers'
+	x : -1,
+	y : -1,
+	angle : -1,
+	owner : 'GG'
 };
-
 var isNot_initPosition = false;
 var isLetGo = false;
 // ---------------------------- server ---------------------------------------------
@@ -88,7 +86,7 @@ net.createServer(function(socket) {
 		else if (gameStart && cmd == 'ShootingToggle') {
 			//player shooting true
 			index = socket.remoteAddress + data[1] + data[2] + data[3];
-			players[index].shooting = !players[index].shooting;
+			players[index].shooting = true;
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShipToggle') {
@@ -126,7 +124,7 @@ function sendDataPlayerToClient(cmd) {
 }
 
 function updateTimer() {
-	if (LetGo) {
+	if (isLetGo) {
 		for (var i=0; i<viewers.length; i++) {
 			io.sockets.socket(viewers[i]).emit('updateTimer', gameRemainingTime--);
 		}
@@ -142,24 +140,46 @@ function updatePlayerStatus() {
 }
 
 function updatePlayersAngle(i) {
-	if (players[i].turnship) {
-		players[i].angle += shipTurnSpeed;
+	if (players[players_index[i]].turnship) {
+		players[players_index[i]].angle += shipTurnSpeed;
 	}
 }
 
 function updatePlayersShooting(i) {
-	if (players[i].shooting) {
-		//Create Bullet
-		//players[i].x
-		//players[i].y
-		//players[i].angle
+	if (players[players_index[i]].shooting) {
+		//createbullet
+		createBullet(players_index[i]);
+		//players[players_index[i]].x
+		//players[players_index[i]].y
+		//players[players_index[i]].angle
+		players[players_index[i]].shooting = false;
 	}
+}
+
+function createBullet(players_index) {
+	var bullet = {
+		x : players[players_index].x,
+		y : players[players_index].y,
+		angle : players[players_index].angle,
+		owner : players_index
+	};
+
+	bullets.push(bullet);
+}
+
+// function updateBullet(argument) {
+// 	bulletCollideShip();
+// 	bulletCollideBorder();
+// }
+
+function arrayRemoveAtIndex (arr, index) {
+	console.log("Remove" + arr.splice(index,1));
 }
 
 function updatePlayersPosition(i) {
 	var rad = angle * Math.PI / 180;
-	var newPositionX = players[i].x + shipRunSpeed * Math.sin(rad);
-	var newPositionY = players[i].y + shipRunSpeed * Math.cos(rad);
+	var newPositionX = players[players_index[i]].x + shipRunSpeed * Math.sin(rad);
+	var newPositionY = players[players_index[i]].y + shipRunSpeed * Math.cos(rad);
 	checkCollideBorder(i, newPositionX, newPositionY);
 
 }
@@ -167,20 +187,20 @@ function updatePlayersPosition(i) {
 function checkCollideBorder(i, newPositionX, newPositionY) {
 	if (newPositionX > 0 && newPositionX + shipSize < screenWidth 
 		&& newPositionY > 0 && newPositionY + shipSize < screenHeight) {
-		players[i].x = newPositionX;
-		players[i].y = newPositionY;
+		players[players_index[i]].x = newPositionX;
+		players[players_index[i]].y = newPositionY;
 	} 
 	else {
 		if (newPositionX < 0)
-			players[i].x = screenWidth - shipSize;
+			players[players_index[i]].x = screenWidth - shipSize;
 		else if (newPositionX + shipSize > screenWidth) {
-			players[i].x = 0;
+			players[players_index[i]].x = 0;
 		}
 		if (newPositionY < 0) {
-			players[i].y = screenHeight - shipSize;
+			players[players_index[i]].y = screenHeight - shipSize;
 		} 
 		else if (newPositionY + shipSize > screenHeight) {
-			players[i].y = 0;
+			players[players_index[i]].y = 0;
 		}
 	}
 }
@@ -190,7 +210,6 @@ setInterval(function () {
 		initPlayerPositionAndAngle();
 		if (isLetGo) {
 			updatePlayerStatus();
-			//sendData();
 		}
 	}
 }, 12);
@@ -198,6 +217,5 @@ setInterval(function () {
 setInterval(function() {
 	updateTimer();
 }, 1000);
-
 
 
