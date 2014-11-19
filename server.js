@@ -9,6 +9,7 @@ var remover = []
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
+var bulletSize = 5;
 var bulletSpeed = 20;
 var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
@@ -147,11 +148,7 @@ function updatePlayersAngle(i) {
 
 function updatePlayersShooting(i) {
 	if (players[players_index[i]].shooting) {
-		//createbullet
 		createBullet(players_index[i]);
-		//players[players_index[i]].x
-		//players[players_index[i]].y
-		//players[players_index[i]].angle
 		players[players_index[i]].shooting = false;
 	}
 }
@@ -163,14 +160,39 @@ function createBullet(players_index) {
 		angle : players[players_index].angle,
 		owner : players_index
 	};
-
 	bullets.push(bullet);
 }
 
-// function updateBullet(argument) {
-// 	bulletCollideShip();
-// 	bulletCollideBorder();
-// }
+function updateBullets() {
+	bulletsCollideShip();
+	// bulletCollideBorder();
+	console.log('updateBullet');
+}
+
+function bulletsCollideShip() {
+	var sx,sy,bx,by;
+	for (var i = 0; i < bullets.length; i++) {
+		for (var j = 0; j < players_index.length; j++) {
+			c_sx = players[players_index[i]].x + shipSize / 2;
+			c_sy = players[players_index[i]].y + shipSize / 2;
+			c_bx = bullets[i].x + bulletSize / 2;
+			c_by = bullets[i].y + bulletSize / 2;
+			if (Math.abs(c_sx - c_bx) < shipSize / 2 + bulletSize / 2 
+				&& Math.abs(c_sy - c_by) < shipSize / 2 + bulletSize / 2) {
+				//Collide
+				if (bullets[i].owner == players_index[j]) {
+					console.log('My Bullet Collide Me');
+				}
+				else {
+					var player_index = bullets[i].owner;
+					players[player_index].score += 1;
+					players[players_index[j]].LP -= 1;
+					//add to remover
+				}
+			}
+		}
+	}
+}
 
 function arrayRemoveAtIndex (arr, index) {
 	console.log("Remove" + arr.splice(index,1));
@@ -210,6 +232,7 @@ setInterval(function () {
 		initPlayerPositionAndAngle();
 		if (isLetGo) {
 			updatePlayerStatus();
+			updateBullets();
 		}
 	}
 }, 12);
