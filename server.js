@@ -26,7 +26,7 @@ var player = {
 }
 var isNot_initPosition = false;
 var isLetGo = false;
-
+// ---------------------------- server ---------------------------------------------
 var io = require('socket.io').listen(SOCKETIO_PORT);
 io.sockets.on('connection', function(socket) {
 	viewers[viewers.length] = socket.id;
@@ -95,7 +95,7 @@ net.createServer(function(socket) {
 }).listen(PYTHON_PORT, PYHTON_HOST, function() {
     console.log('----> Socket to talk to python !!!!!!!   Host : ' + PYHTON_HOST + ': PORT : ' + PYTHON_PORT + '   !!!!!!!!');
 });
-
+//----------------------------  Game -------------------------------------------------
 function initPlayerPositionAndAngle() {
 	for (var i = 0; i < players_index.length; i++) {
 		if (isNot_initPosition) {
@@ -126,7 +126,7 @@ function updatePlayerStatus() {
 	for (var i = 0; i < players.length; i++) {
 		updatePlayersAngle(i)
 		updatePlayersShooting(i)
-		updatePlayersVelocity(i);
+		updatePlayersPosition(i);
 	}
 }
 
@@ -138,17 +138,40 @@ function updatePlayersAngle(i) {
 
 function updatePlayersShooting(i) {
 	if (players[i].shooting) {
-			//Create Bullet
+		//Create Bullet
 		//players[i].x
 		//players[i].y
 		//players[i].angle
 	}
 }
 
-function updatePlayersVelocity(i) {
+function updatePlayersPosition(i) {
 	var rad = angle * Math.PI / 180;
-	players[i].x += shipRunSpeed * Math.sin(rad);
-	players[i].y += shipRunSpeed * Math.cos(rad);
+	var newPositionX = players[i].x + shipRunSpeed * Math.sin(rad);
+	var newPositionY = players[i].y + shipRunSpeed * Math.cos(rad);
+	checkCollideBorder(i, newPositionX, newPositionY);
+
+}
+
+function checkCollideBorder(i, newPositionX, newPositionY) {
+	if (newPositionX > 0 && newPositionX + shipSize < screenWidth 
+		&& newPositionY > 0 && newPositionY + shipSize < screenHeight) {
+		players[i].x = newPositionX;
+		players[i].y = newPositionY;
+	} 
+	else {
+		if (newPositionX < 0)
+			players[i].x = screenWidth - shipSize;
+		else if (newPositionX + shipSize > screenWidth) {
+			players[i].x = 0;
+		}
+		if (newPositionY < 0) {
+			players[i].y = screenHeight - shipSize;
+		} 
+		else if (newPositionY + shipSize > screenHeight) {
+			players[i].y = 0;
+		}
+	}
 }
 //Edit Her
 setInterval(function () {
