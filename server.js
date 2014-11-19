@@ -80,7 +80,7 @@ net.createServer(function(socket) {
 			players[index].shooting = !players[index].shooting;
 			console.log('shooting');
 		}
-		else if (gameStart && cmd == 'TurnShip') {
+		else if (gameStart && cmd == 'TurnShipToggle') {
 			index = socket.remoteAddress + data[1] + data[2] + data[3];
 			players[index].turnship = !players[index].turnship;
 			console.log('TurnShip ' + socket.remoteAddress);
@@ -91,6 +91,7 @@ net.createServer(function(socket) {
     socket.on('close', function(err) {
         console.log('Disconnect');
     });
+
 }).listen(PYTHON_PORT, PYHTON_HOST, function() {
     console.log('----> Socket to talk to python !!!!!!!   Host : ' + PYHTON_HOST + ': PORT : ' + PYTHON_PORT + '   !!!!!!!!');
 });
@@ -120,20 +121,49 @@ function updateTimer() {
 		}
 	}
 }
-//Edit Here
+
+function updatePlayerStatus() {
+	for (var i = 0; i < players.length; i++) {
+		updatePlayersAngle(i)
+		updatePlayersShooting(i)
+		updatePlayersVelocity(i);
+	}
+}
+
+function updatePlayersAngle(i) {
+	if (players[i].turnship) {
+		players[i].angle += shipTurnSpeed;
+	}
+}
+
+function updatePlayersShooting(i) {
+	if (players[i].shooting) {
+			//Create Bullet
+		//players[i].x
+		//players[i].y
+		//players[i].angle
+	}
+}
+
+function updatePlayersVelocity(i) {
+	var rad = angle * Math.PI / 180;
+	players[i].x += shipRunSpeed * Math.sin(rad);
+	players[i].y += shipRunSpeed * Math.cos(rad);
+}
+//Edit Her
 setInterval(function () {
 	if (gameStart && !gameEnd) {
 		initPlayerPositionAndAngle();
 		if (isLetGo) {
 			updatePlayerStatus();
-			// updateBulletPosition();
+			//sendData();
 		}
 	}
 }, 12);
 
 setInterval(function() {
 	updateTimer();
-},1000);
+}, 1000);
 
 
 
