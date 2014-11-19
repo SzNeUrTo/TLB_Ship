@@ -5,7 +5,8 @@ var viewers = [];
 var players = [];
 var players_index = [];
 var bullets = [];
-var removers = [];
+var removerPlayers = [];
+var removerBullets = [];
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
@@ -168,6 +169,7 @@ function createBullet(players_index) {
 
 function updateBullets() {
 	bulletsCollideShip();
+	removeBullets();
 	// bulletCollideBorder();
 	console.log('updateBullet');
 }
@@ -194,11 +196,22 @@ function bulletsCollideShip() {
 						players[shooting].score += 1;
 					}
 					//add to push [] remover
+					var bulletIndex = i;
+					removerBullets.push(bulletIndex);
 				}
 			}
 		}
 	}
-	//remove obj in remover
+}
+
+function removeBullets() {
+	removerBullets.sort(function(a, b){return a-b});
+	var index = 0;
+	while (index < removerBullets.length) {
+		arrayRemoveAtIndex(Bullets, removerBullets[index] - index);
+		index++;
+	}
+	removerBullets = [];
 }
 
 function arrayRemoveAtIndex (arr, index) {
