@@ -3,9 +3,12 @@ var PYTHON_PORT = 8081
 var SOCKETIO_PORT = 8080
 var viewers = []
 var players = []
+var bullets = []
+var remover = []
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
+var bulletSize = 5;
 var bulletSpeed = 20;
 var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
@@ -24,6 +27,14 @@ var player = {
 	shooting : false,
 	turnship : false
 }
+
+var bullet = {
+	x : 0,
+	y : 0,
+	angle : 0,
+	owner : 'indexofplayers'
+};
+
 var isNot_initPosition = false;
 var isLetGo = false;
 // ---------------------------- server ---------------------------------------------
