@@ -46,7 +46,7 @@ io.sockets.on('connection', function(socket) {
 
 var net = require('net');  // node v0.10.21 (latest)
 net.createServer(function(socket) {
-	mySocket = socket
+	console.log(socket);
     console.log('CONNECTION for Python: ' + socket.remoteAddress +':'+ socket.remotePort);
 
 	console.log('=================== Game is Started... ======================');
@@ -64,6 +64,7 @@ net.createServer(function(socket) {
 		}
 		else if (cmd == 'LetGo') {
 			console.log('Fighting');
+			gameStart = true;
 			isLetGo = true;
 		}
 		else if (cmd  == 'JoinGame' && !gameStart) {
@@ -96,6 +97,9 @@ net.createServer(function(socket) {
 			players[index].turnship = !players[index].turnship;
 			console.log('TurnShip ' + socket.remoteAddress);
 		}
+		else if (cmd == 'Reset') {
+			console.log('reset');
+		}
 	    console.log('IP : ' + socket.remoteAddress + ' DATA_Recieve : ' + data);
 	});
 
@@ -108,15 +112,15 @@ net.createServer(function(socket) {
 });
 //--------------------------------------------  Game -------------------------------------------------
 function initPlayerPositionAndAngle() {
-	for (var i = 0; i < players_index.length; i++) {
-		if (isNot_initPosition) {
+	if (isNot_initPosition) {
+		for (var i = 0; i < players_index.length; i++) {
 			players[players_index[i]].x = screenWidth * i / size + shipSize;
 			players[players_index[i]].y = screenHeight * i / size + shipSize;
 			players[players_index[i]].angle = Math.floor((Math.random() * 360));
 		}
-		isNot_initPosition = true;
+		isNot_initPosition = false;
+		console.log('initPlayerPositionAndAngle');
 	}
-	console.log('initPlayerPositionAndAngle');
 }
 
 function sendDataToClient(cmd) {
@@ -140,16 +144,15 @@ function sendDataToClient(cmd) {
 
 function emiter (cmd, obj) {
 	for (var i = 0; i < viewers.length; i++) {
-		io.sockets.socket(viewers[i]).emit(cmd, obj);
+		io.sockets.emit(cmd, obj);
 	}
 }
 
 function updateTimer() {
 	if (isLetGo) {
-		for (var i=0; i<viewers.length; i++) {
-			io.sockets.socket(viewers[i]).emit('updateTimer', gameRemainingTime--);
-		}
-		if (gameRemainingTime == 0) {
+		io.sockets.emit('updateTimer', --gameRemainingTime);
+		if (gameRemainingTime <= 0) {
+			gameRemainingTime = 0;
 			gameEnd = true;
 		}
 	}
@@ -160,7 +163,16 @@ function updatePlayerStatus() {
 		updatePlayersAngle(i)
 		updatePlayersShooting(i)
 		updatePlayersPosition(i);
+		shipCollideship(i);
 	}
+}
+
+function shipCollideship (i) {
+	for (var j = 0; j < players.length; j++) {
+		if (i != j) {
+			// Check Ship Collide Ship And Update Score And Die
+		}
+	};
 }
 
 function updatePlayersAngle(i) {
@@ -192,7 +204,7 @@ function updateBullets() {
 	removeBullets();
 	bulletsCollideBorder();
 	removeBullets();
-	console.log('updateBullet');
+	//console.log('updateBullet');
 }
 function bulletMoveMent() {
 	for (var i = 0; i < bullets.length; i++) {
@@ -233,8 +245,8 @@ function bulletsCollideShip() {
 }
 
 function bulletsCollideBorder() {
-	for (var i = 0; i < Bullets.length; i++) {
-		if (Bullets[i].x < 0 || Bullets[i].y < 0 || Bullets[i].x + bulletSize > screenWidth || Bullets[i].y + bulletSize < screenHeight)
+	for (var i = 0; i < bullets.length; i++) {
+		if (bullets[i].x < 0 || bullets[i].y < 0 || bullets[i].x + bulletSize > screenWidth || bullets[i].y + bulletSize < screenHeight)
 			var bulletIndex = i;
 			removerBullets.push(bulletIndex);
 	}
@@ -244,7 +256,7 @@ function removeBullets() {
 	removerBullets.sort(function(a, b){return a-b});
 	var index = 0;
 	while (index < removerBullets.length) {
-		arrayRemoveAtIndex(Bullets, removerBullets[index] - index);
+		arrayRemoveAtIndex(bullets, removerBullets[index] - index);
 		index++;
 	}
 	removerBullets = [];
