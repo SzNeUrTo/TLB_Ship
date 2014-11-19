@@ -6,10 +6,12 @@ var players = []
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
-var shipSpeed = 5;
-
+var bulletSpeed = 20;
+var shipRunSpeed = 5;
+var shipTurnSpeed = 5;
 var gameStart = false;
-var gameRemainingTime = 120;
+var gameEnd = false;
+var gameRemainingTime = 180;
 var player = {
 	sid : '5600000000',
 	lifepoint : 3,
@@ -21,27 +23,16 @@ var player = {
 	shooting : false,
 	turnship : false
 }
-var bulletSpeed = 20;
+var isNot_initPosition = false;
+var isLetGo = false;
 
 var io = require('socket.io').listen(SOCKETIO_PORT);
-
-// use for simuserver.html
 io.sockets.on('connection', function(socket) {
 	viewers[viewers.length] = socket.id;
+	console.log('Viewer Connection ID : ' + socket.id);
 });
-	//console.log(socket.remoteAddress);
-	//io.sockets.emit('menu', {pizza: 'Hawaiian pizza'});
-//
-//	socket.on('order', function(pizza) {
-//		console.log('You want to order menu ', pizza);
-//	});
-//	
-//	socket.on('disconnect', function() {
-//		io.sockets.emit('end call');
-	//});
 
 var net = require('net');  // node v0.10.21 (latest)
-
 net.createServer(function(socket) {
 	mySocket = socket
     console.log('CONNECTION for Python: ' + socket.remoteAddress +':'+ socket.remotePort);
@@ -55,6 +46,13 @@ net.createServer(function(socket) {
 		if (cmd == 'GameStart') {
 			console.log('GM CMD = GameStart');
 			gameStart = true;
+		}
+		else if (cmd == 'PrepareToStart') {
+			console.log('Close to join game...');
+		}
+		else if (cmd == 'LetGo') {
+			console.log('Fighting');
+			isLetGo = true;
 		}
 		else if (cmd  == 'JoinGame' && !gameStart) {
 			ID = data[1] + '';
@@ -85,15 +83,46 @@ net.createServer(function(socket) {
 			players[index].turnship = !players[index].turnship;
 			console.log('TurnShip ' + socket.remoteAddress);
 		}
-	    console.log('DATA ' + socket.remoteAddress + ' eiei : ' + data);
-	    body += data;
-		io.sockets.emit('menu', {pizza: (data+'')});
+	    console.log('IP : ' + socket.remoteAddress + ' DATA_Recieve : ' + data);
 	});
 
     socket.on('close', function(err) {
-        console.log('finish transmitting data... ');
-        console.log(body);
+        console.log('Disconnect');
     });
 }).listen(PYTHON_PORT, PYHTON_HOST, function() {
-    console.log('----> socket to talk to python ' + PYHTON_HOST + ':' + PYTHON_PORT);
+    console.log('----> Socket to talk to python !!!!!!!   Host : ' + PYHTON_HOST + ': PORT : ' + PYTHON_PORT + '   !!!!!!!!');
 });
+
+function initPlayerPositionAndAngle () {
+	for (var i = 0; i < players.length; i++) {
+		if (isNot_initPosition) {
+			players[i].x = screenWidth * i / size + shipSize;
+			players[i].y = screenHeight * i / size + shipSize;
+			players[i].angle = Math.floor((Math.random() * 360));
+		}
+		isNot_initPosition = true;
+	}
+}
+
+function sendDataToClient (cmd) {
+	for (var i=0; i<viewers.length; i++) {
+		io.sockets.socket(viewers[i]).emit(cmd, players);
+	}
+}
+//Edit Here
+setInterval(function () {
+	if (gameStart && !gameEnd) {
+		initPlayerPosition();
+		if (isLetGo) {
+			// updatePlayerPosition();
+			// updateBulletPosition();
+		}
+	}
+}, 12);
+
+// setInterval(function() {
+	//UpdateTimer
+// },1000);
+
+
+
