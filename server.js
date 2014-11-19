@@ -1,11 +1,11 @@
 var PYHTON_HOST = '127.0.0.1'
 var PYTHON_PORT = 8081
 var SOCKETIO_PORT = 8080
-var viewers = []
-var players = []
+var viewers = [];
+var players = [];
 var players_index = [];
-var bullets = []
-var remover = []
+var bullets = [];
+var removers = [];
 var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 70;
@@ -129,6 +129,9 @@ function updateTimer() {
 		for (var i=0; i<viewers.length; i++) {
 			io.sockets.socket(viewers[i]).emit('updateTimer', gameRemainingTime--);
 		}
+		if (gameRemainingTime == 0) {
+			gameEnd = true;
+		}
 	}
 }
 
@@ -184,14 +187,18 @@ function bulletsCollideShip() {
 					console.log('My Bullet Collide Me');
 				}
 				else {
-					var player_index = bullets[i].owner;
-					players[player_index].score += 1;
+					var shooter = bullets[i].owner;
 					players[players_index[j]].LP -= 1;
-					//add to remover
+					if (players[players_index[j]].LP <= 0) {
+						players[players_index[j]].LP = 0;
+						players[shooting].score += 1;
+					}
+					//add to push [] remover
 				}
 			}
 		}
 	}
+	//remove obj in remover
 }
 
 function arrayRemoveAtIndex (arr, index) {
@@ -233,12 +240,14 @@ setInterval(function () {
 		if (isLetGo) {
 			updatePlayerStatus();
 			updateBullets();
+			//updateScoreBoard();
 		}
 	}
 }, 12);
 
 setInterval(function() {
-	updateTimer();
+	if (!gameEnd)
+		updateTimer();
 }, 1000);
 
 
