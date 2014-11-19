@@ -93,7 +93,7 @@ net.createServer(function(socket) {
     console.log('----> Socket to talk to python !!!!!!!   Host : ' + PYHTON_HOST + ': PORT : ' + PYTHON_PORT + '   !!!!!!!!');
 });
 
-function initPlayerPositionAndAngle () {
+function initPlayerPositionAndAngle() {
 	for (var i = 0; i < players.length; i++) {
 		if (isNot_initPosition) {
 			players[i].x = screenWidth * i / size + shipSize;
@@ -102,6 +102,7 @@ function initPlayerPositionAndAngle () {
 		}
 		isNot_initPosition = true;
 	}
+	console.log('initPlayerPositionAndAngle');
 }
 
 function sendDataToClient (cmd) {
@@ -112,7 +113,7 @@ function sendDataToClient (cmd) {
 //Edit Here
 setInterval(function () {
 	if (gameStart && !gameEnd) {
-		initPlayerPosition();
+		initPlayerPositionAndAngle();
 		if (isLetGo) {
 			// updatePlayerPosition();
 			// updateBulletPosition();
