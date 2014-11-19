@@ -9,8 +9,8 @@ var removerPlayers = [];
 var removerBullets = [];
 var screenWidth = 800;
 var screenHeight = 600;
-var shipSize = 70;
-var bulletSize = 5;
+var shipSize = 64;
+var bulletSize = 4;
 var bulletSpeed = 20;
 var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
@@ -168,12 +168,19 @@ function createBullet(players_index) {
 }
 
 function updateBullets() {
+	bulletMoveMent();
 	bulletsCollideShip();
 	removeBullets();
 	bulletsCollideBorder();
 	removeBullets();
-	// bulletCollideBorder();
 	console.log('updateBullet');
+}
+function bulletMoveMent() {
+	for (var i = 0; i < bullets.length; i++) {
+		var rad = bullets[i].angle * Math.PI / 180;
+		bullets[i].x += bulletSpeed * Math.sin(rad);
+		bullets[i].y += bulletSpeed * Math.cos(rad);
+	}
 }
 
 function bulletsCollideShip() {
