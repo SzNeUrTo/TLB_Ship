@@ -170,12 +170,14 @@ function createBullet(players_index) {
 function updateBullets() {
 	bulletsCollideShip();
 	removeBullets();
+	bulletsCollideBorder();
+	removeBullets();
 	// bulletCollideBorder();
 	console.log('updateBullet');
 }
 
 function bulletsCollideShip() {
-	var sx,sy,bx,by;
+	var sx, sy, bx, by;
 	for (var i = 0; i < bullets.length; i++) {
 		for (var j = 0; j < players_index.length; j++) {
 			c_sx = players[players_index[i]].x + shipSize / 2;
@@ -201,6 +203,14 @@ function bulletsCollideShip() {
 				}
 			}
 		}
+	}
+}
+
+function bulletsCollideBorder() {
+	for (var i = 0; i < Bullets.length; i++) {
+		if (Bullets[i].x < 0 || Bullets[i].y < 0 || Bullets[i].x + bulletSize > screenWidth || Bullets[i].y + bulletSize < screenHeight)
+			var bulletIndex = i;
+			removerBullets.push(bulletIndex);
 	}
 }
 
