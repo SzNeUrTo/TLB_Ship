@@ -75,7 +75,7 @@ net.createServer(function(socket) {
 			if (players[index] == null) {
 				players[index] = player;
 				players[index].sid = ID;
-				players[index].LP = 3;
+				players[index].lifepoint = 3;
 				players[index].score = 0;
 				players[index].x = 200;
 				players[index].y = 200;
@@ -106,7 +106,7 @@ net.createServer(function(socket) {
 }).listen(PYTHON_PORT, PYHTON_HOST, function() {
     console.log('----> Socket to talk to python !!!!!!!   Host : ' + PYHTON_HOST + ': PORT : ' + PYTHON_PORT + '   !!!!!!!!');
 });
-//----------------------------  Game -------------------------------------------------
+//--------------------------------------------  Game -------------------------------------------------
 function initPlayerPositionAndAngle() {
 	for (var i = 0; i < players_index.length; i++) {
 		if (isNot_initPosition) {
@@ -192,9 +192,9 @@ function bulletsCollideShip() {
 				}
 				else {
 					var shooter = bullets[i].owner;
-					players[players_index[j]].LP -= 1;
-					if (players[players_index[j]].LP <= 0) {
-						players[players_index[j]].LP = 0;
+					players[players_index[j]].lifepoint -= 1;
+					if (players[players_index[j]].lifepoint <= 0) {
+						players[players_index[j]].lifepoint = 0;
 						players[shooting].score += 1;
 					}
 					//add to push [] remover
