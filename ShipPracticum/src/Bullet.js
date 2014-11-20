@@ -9,7 +9,7 @@ var Bullet = cc.Sprite.extend({
     updatePositionXY : function(x, y) {
         this.cx = x + Bullet.SIZE / 2;
         this.cy = y + Bullet.SIZE / 2;
-        this.setPosition(new cc.Point(this.cx, this.cy));
+        this.setPosition(new cc.Point(this.cx + Ship.SIZE / 2, this.cy + Ship.SIZE / 2));
     }
 });
 

@@ -50,18 +50,38 @@ var GameLayer = cc.LayerColor.extend({
     },
 
     createPlayers : function (players, index) {
+        this.clearPlayers();
+		// console.log('CreatePlayers');
+		// console.log(players);
+        // console.log('playerslength : ' + players.length);
         for (var i = 0; i < players.length; i++) {
             this.ships[i] = new Ship();
             this.updatePlayers(players, index, i);
             this.addChild(this.ships[i]);
+            // console.log('ship')
         }    
     },
 
-    updatePlayers : function () {
+    updatePlayers : function (players, index, i) {
+        // this.clearPlayers();
+        // console.log('updatePlayers');
+        // console.log(players[index[i]].x);
         this.ships[i].sid = players[index[i]].sid;
         this.ships[i].lifepoint = players[index[i]].lifepoint;
         this.ships[i].updatePositionRotation(players[index[i]].x, players[index[i]].y, players[index[i]].angle)
     },
+
+    // updatePlayers : function (players, index) {
+    //     console.log('lenPlayers' + players.length);
+    //     console.log('lenShips ' + this.ships.length)
+    //     for (var i = 0; i < players.length; i++) {
+    //         // console.log('updatePlayers');
+    //         this.ships[i].sid = players[index[i]].sid;
+    //         this.ships[i].lifepoint = players[index[i]].lifepoint;
+    //         // console.log(players[index[i]].x);
+    //         this.ships[i].updatePositionRotation(players[index[i]].x, players[index[i]].y, players[index[i]].angle)
+    //     }
+    // },
 
     createBullets : function (dataBullet) {
         lastIndex = this.bullets.length;
@@ -85,6 +105,14 @@ var GameLayer = cc.LayerColor.extend({
         };
     },
 
+    clearPlayers : function () {
+        // console.log('ClearPlayers');
+        while (this.ships.length > 0) {
+            // console.log('removeChlid');
+            this.removeChild(this.removeArrayAtIndex(this.ships, 0));
+        }
+    },
+
     IOSocket: function () {
         var self = this; // important
 
@@ -97,7 +125,9 @@ var GameLayer = cc.LayerColor.extend({
         });
 
         socket.on('updatePlayers', function(players, index) {
-            self.updatePlayers(players, index);
+            // self.updatePlayers(players, index);
+            self.createPlayers(players, index);
+
         });
         //rw
         socket.on('createBullets', function(dataBullet) {
@@ -111,7 +141,14 @@ var GameLayer = cc.LayerColor.extend({
         socket.on('removeBullets', function(bulletsRemover) {
             self.removeBullets(bulletsRemover);
         });
+
+        // socket.on('clearPlayers', function(eiei) {
+        //     console.log('ClearPlayers');
+        //     self.clearPlayers();
+        // });
         //rw
+
+        //update = clear and create 555
     },
 
     setTextRemaining: function() {

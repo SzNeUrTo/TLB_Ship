@@ -1,6 +1,7 @@
 var PYHTON_HOST = '127.0.0.1'
 var PYTHON_PORT = 8081
-var SOCKETIO_PORT = 8080
+var SOCKETIO_PORT = 8080;
+var keys = {};
 var viewers = [];
 var players = [];
 var players_index = [];
@@ -17,17 +18,6 @@ var shipTurnSpeed = 5;
 var gameStart = false;
 var gameEnd = false;
 var gameRemainingTime = 180;
-var player = {
-	sid : '5600000000',
-	lifepoint : 3,
-	score : 0,
-	x : -1,
-	y : -1,
-	angle : 0,
-	checkVal : '',
-	shooting : false,
-	turnship : false
-}
 
 var bullet = {
 	x : -1,
@@ -35,13 +25,21 @@ var bullet = {
 	angle : -1,
 	owner : 'GG'
 };
-var isNot_initPosition = false;
+var isNot_initPosition = true;
 var isLetGo = false;
 // ---------------------------- server ---------------------------------------------
 var io = require('socket.io').listen(SOCKETIO_PORT);
 io.sockets.on('connection', function(socket) {
 	viewers[viewers.length] = socket.id;
 	console.log('Viewer Connection ID : ' + socket.id);
+	if (gameStart) {
+		sendDataToClient('clearPlayers');
+		sendDataToClient('createPlayers');
+	}
+	// else {
+
+	// }
+	// sendDataToClient('createPlayers');
 });
 
 var net = require('net');  // node v0.10.21 (latest)
@@ -56,8 +54,9 @@ net.createServer(function(socket) {
 		cmd = data.split('|')[0] + '';
 		data = data.split('|');
 		if (cmd == 'GameStart') {
-			console.log('GM CMD = GameStart');
+			console.log('GM CMD = GameStart => clearPlayers');
 			gameStart = true;
+			sendDataToClient('clearPlayers');
 			//createplyers
 		}
 		else if (cmd == 'PrepareToStart') {
@@ -74,35 +73,42 @@ net.createServer(function(socket) {
 			console.log('***JoinGame :' + socket.remoteAddress + ' ' + ID + ' ' + CheckVal);
 			console.log('Players ? :');
 			console.log(players);
-			
 			key = socket.remoteAddress + data[1] + data[2] + data[3];
+			if (keys[key] == null) {
 			// index = socket.remoteAddress + data[1] + data[2] + data[3];
-			if (players[index] == null) {
-				players_index[players_index.length] = index;
-				players[index] = player;
-				players[index].sid = ID;
-				players[index].lifepoint = 3;
-				players[index].score = 0;
-				players[index].x = 200;
-				players[index].y = 200;
-				players[index].angle = 0;
-				players[index].checkVal = CheckVal;
-				players[index].shooting = false;
-				players[index].turnship = false;
+			// if (players[index] == null) {
+				newIndex = players.length;
+				keys[key] = newIndex;
+				players_index[newIndex] = newIndex;
+
+				var player = {
+					sid : ID,
+					lifepoint : 3,
+					score : 0,
+					x : 400,
+					y : 400,
+					angle : 0,
+					checkVal : CheckVal,
+					shooting : false,
+					turnship : false
+				}
+				
+				players[newIndex] = player;
 				console.log('Players in if :');
 				console.log(players);
 			}
 		}
 		else if (gameStart && cmd == 'ShootingToggle') {
 			//player shooting true
-			index = socket.remoteAddress + data[1] + data[2] + data[3];
+			key = socket.remoteAddress + data[1] + data[2] + data[3];
+			index = keys[key];
 			players[index].shooting = true;
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShipToggle') {
-			index = socket.remoteAddress + data[1] + data[2] + data[3];
+			key = socket.remoteAddress + data[1] + data[2] + data[3];
+			index = keys[key];
 			players[index].turnship = !players[index].turnship;
-			console.log('TurnShip ' + socket.remoteAddress);
 		}
 		else if (cmd == 'Reset') {
 			console.log('reset');
@@ -121,11 +127,17 @@ net.createServer(function(socket) {
 function initPlayerPositionAndAngle() {
 	if (isNot_initPosition) {
 		for (var i = 0; i < players_index.length; i++) {
-			players[players_index[i]].x = screenWidth * i / size + shipSize;
-			players[players_index[i]].y = screenHeight * i / size + shipSize;
-			players[players_index[i]].angle = Math.floor((Math.random() * 360));
+			players[players_index[i]].x = screenWidth * i / players_index.length;
+			players[players_index[i]].y = screenHeight * i / players_index.length;
+			console.log('------> players x + ' + players[players_index[i]].x + ' | y = ' + players[players_index[i]].y);
+			// players[players_index[i]].angle = Math.floor((Math.random() * 360));
+			// players[players_index[i]].x = 200 * i ;
+			// players[players_index[i]].y = 200 * i ;
+
+
 		}
 		isNot_initPosition = false;
+		sendDataToClient('clearPlayers');
 		sendDataToClient('createPlayers');
 		console.log('initPlayerPositionAndAngle');
 	}
@@ -139,11 +151,11 @@ function sendDataToClient(cmd) {
 	else if (cmd == 'createPlayers') {
 		io.sockets.emit(cmd, players, players_index);
 	}
+	else if (cmd == 'clearPlayers') {
+		io.sockets.emit(cmd, 'eiei');
+	}
 	else if (cmd == 'updateBullets') {
 		io.sockets.emit(cmd, bullets);
-	}
-	else if (cmd == 'gameStart') {
-		io.sockets.emit(cmd, players, players_index);
 	}
 	else if (cmd == 'gameEnd') {
 		io.sockets.emit(cmd, players, players_index);
@@ -185,6 +197,7 @@ function shipCollideship (i) {
 
 function updatePlayersAngle(i) {
 	if (players[players_index[i]].turnship) {
+		console.log('--->  angle : ' + players[players_index[i]].angle);
 		players[players_index[i]].angle += shipTurnSpeed;
 		players[players_index[i]].angle %= 360;
 	}
@@ -280,7 +293,7 @@ function arrayRemoveAtIndex (arr, index) {
 
 function updatePlayersPosition(i) {
 	if (players[players_index[i]].lifepoint > 0) {
-		var rad = angle * Math.PI / 180;
+		var rad = players[players_index[i]].angle * Math.PI / 180;
 		var newPositionX = players[players_index[i]].x + shipRunSpeed * Math.sin(rad);
 		var newPositionY = players[players_index[i]].y + shipRunSpeed * Math.cos(rad);
 		checkCollideBorder(i, newPositionX, newPositionY);
@@ -289,31 +302,48 @@ function updatePlayersPosition(i) {
 		players[players_index[i]].x = -1000;
 		players[players_index[i]].y = -1000;
 	}
+	sendDataToClient('updatePlayers');
 }
 
 function checkCollideBorder(i, newPositionX, newPositionY) {
-	if (newPositionX > 0 && newPositionX + shipSize < screenWidth 
-		&& newPositionY > 0 && newPositionY + shipSize < screenHeight) {
-		players[players_index[i]].x = newPositionX;
-		players[players_index[i]].y = newPositionY;
-	} 
-	else {
-		if (newPositionX < 0)
-			players[players_index[i]].x = screenWidth - shipSize;
-		else if (newPositionX + shipSize > screenWidth) {
-			players[players_index[i]].x = 0;
-		}
-		if (newPositionY < 0) {
-			players[players_index[i]].y = screenHeight - shipSize;
-		} 
-		else if (newPositionY + shipSize > screenHeight) {
-			players[players_index[i]].y = 0;
-		}
+	// if (newPositionX > 0 && newPositionX + shipSize < screenWidth 
+	// 	&& newPositionY > 0 && newPositionY + shipSize < screenHeight) {
+	// 	players[players_index[i]].x = newPositionX;
+	// 	players[players_index[i]].y = newPositionY;
+	// } 
+	// else {
+	// 	if (newPositionX < 0)
+	// 		players[players_index[i]].x = screenWidth - shipSize;
+	// 	else if (newPositionX + shipSize > screenWidth) {
+	// 		players[players_index[i]].x = 0;
+	// 	}
+	// 	if (newPositionY < 0) {
+	// 		players[players_index[i]].y = screenHeight - shipSize;
+	// 	} 
+	// 	else if (newPositionY + shipSize > screenHeight) {
+	// 		players[players_index[i]].y = 0;
+	// 	}
+	// }
+
+	players[players_index[i]].x = newPositionX;
+	players[players_index[i]].y = newPositionY;
+	if (newPositionX < 0)
+		players[players_index[i]].x = screenWidth - shipSize;
+	else if (newPositionX + shipSize > screenWidth) {
+		players[players_index[i]].x = 0;
 	}
+	if (newPositionY < 0) {
+		players[players_index[i]].y = screenHeight - shipSize;
+	} 
+	else if (newPositionY + shipSize > screenHeight) {
+		players[players_index[i]].y = 0;
+	}
+	// console.log('X = ' + players[players_index[i]].x + ' Y = ' + players[players_index[i]].y);
 }
 //Edit Here
 setInterval(function () {
 	if (gameStart && !gameEnd) {
+		// console.log('Test');
 		initPlayerPositionAndAngle();
 		if (isLetGo) {
 			updatePlayerStatus();

@@ -12,9 +12,10 @@ var Ship = cc.Sprite.extend({
     },
 
     updatePositionRotation : function(x, y, angle) {
-        this.cx = x + Ship.SIZE / 2;
-        this.cy = y + Ship.SIZE / 2;
+        this.cx = x + 64 / 2;
+        this.cy = y + 64 / 2;
         this.angle = angle;
+        // this.setPosition(new cc.Point(this.cx, this.cy));
         this.setPosition(new cc.Point(this.cx, this.cy));
         this.setRotation(this.angle);
     },

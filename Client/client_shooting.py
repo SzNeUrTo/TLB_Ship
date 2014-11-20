@@ -5,8 +5,8 @@ from time import sleep
 from random import randrange
 
 #######################  Edit Here #########################
-HOST = '10.2.19.221'    # The remote host
-PORT = 50008              # The same port as used by the server
+HOST = '127.0.0.1'    # The remote host
+PORT = 8081              # The same port as used by the server
 #######################  Edit Here #########################
 
 devs = findDevices()
@@ -33,19 +33,19 @@ checkVal = randrange(1000)
 s.sendall('JoinGame|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
 while True :
     try :
-        newLight = b.getLight() < 500;
+        newLight = b.getLight() < 400;
         if newLight != oldLight :
-            s.sendall('TurnShip|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
+            s.sendall('TurnShipToggle|' + str(b.getDeviceName()) + '|' + str(checkVal) + '|' + (b.getVendorName()))
 
         newSwitch = b.getSwitch()
         if newSwitch != oldSwitch :
             if newSwitch :
-                s.sendall('ShootingToggle|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
+                s.sendall('ShootingToggle|' + str(b.getDeviceName()) + '|' + str(checkVal) + '|' + str(b.getVendorName()))
         oldSwitch = newSwitch
-        print "Round %d ----> Switch state: %-8s | Light value: %d" % (round, state, light)
+        print "Round %d ----> Switch state: %-8s | Light value: %d" % (round, b.getSwitch(), b.getLight())
         round += 1
     except :
-        print "BomB"
+        print 'bomb'
 data = s.recv(1024)
 s.close()
 print 'Received', repr(data)
