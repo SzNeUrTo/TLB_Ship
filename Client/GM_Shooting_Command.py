@@ -4,7 +4,7 @@ from peri import PeriBoard
 from time import sleep
 
 #######################  Edit Here #########################
-HOST = '127.0.0.1'    # The remote host
+HOST = '10.2.4.98'    # The remote host
 PORT = 8081              # The same port as used by the server
 #######################  Edit Here #########################
 

@@ -1,4 +1,4 @@
-var PYHTON_HOST = '127.0.0.1'
+var PYHTON_HOST = '10.2.4.98'
 var PYTHON_PORT = 8081
 var SOCKETIO_PORT = 8080;
 var keys = {};
@@ -17,7 +17,7 @@ var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
 var gameStart = false;
 var gameEnd = false;
-var gameRemainingTime = 180;
+var gameRemainingTime = 60;
 
 var bullet = {
 	x : -1,
@@ -102,18 +102,22 @@ net.createServer(function(socket) {
 			//player shooting true
 			key = socket.remoteAddress + data[1] + data[2] + data[3];
 			index = keys[key];
-			players[index].shooting = true;
+			if (index != null) {
+				players[index].shooting = true;
+			}
 			console.log('shooting');
 		}
 		else if (gameStart && cmd == 'TurnShipToggle') {
 			key = socket.remoteAddress + data[1] + data[2] + data[3];
 			index = keys[key];
-			players[index].turnship = !players[index].turnship;
+			if (index != null) {
+				players[index].turnship = !players[index].turnship;
+			}
 		}
 		else if (cmd == 'Reset') {
 			console.log('reset');
 		}
-	    console.log('IP : ' + socket.remoteAddress + ' DATA_Recieve : ' + data);
+	    //console.log('IP : ' + socket.remoteAddress + ' DATA_Recieve : ' + data);
 	});
 
     socket.on('close', function(err) {
@@ -197,7 +201,7 @@ function shipCollideship (i) {
 
 function updatePlayersAngle(i) {
 	if (players[players_index[i]].turnship) {
-		console.log('--->  angle : ' + players[players_index[i]].angle);
+		//console.log('--->  angle : ' + players[players_index[i]].angle);
 		players[players_index[i]].angle += shipTurnSpeed;
 		players[players_index[i]].angle %= 360;
 	}
@@ -253,11 +257,11 @@ function bulletsCollideShip() {
 					console.log('My Bullet Collide Me');
 				}
 				else {
-					var shooter = bullets[i].owner;
+					//var shooter = bullets[i].owner;
 					players[players_index[j]].lifepoint -= 1;
 					if (players[players_index[j]].lifepoint <= 0) {
 						players[players_index[j]].lifepoint = 0;
-						players[shooting].score += 1;
+						players[bullets[i].owner].score += 1;
 					}
 					//add to push [] remover
 					var bulletIndex = i;
@@ -356,6 +360,12 @@ setInterval(function () {
 setInterval(function() {
 	if (!gameEnd)
 		updateTimer();
+	else {
+		console.log('==================================================');
+		for (var i = 0; i < players.length; i++) {
+			console.log('Score : ' + players[i].score + '| index : ' + i);
+		}
+	}
 }, 1000);
 
 
