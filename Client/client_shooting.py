@@ -2,6 +2,7 @@ import socket
 from practicum import findDevices
 from peri import PeriBoard
 from time import sleep
+from random import randrange
 
 #######################  Edit Here #########################
 HOST = '10.2.19.221'    # The remote host
@@ -27,10 +28,12 @@ oldLight = False
 newLight = False
 oldSwitch = False
 newSwitch = False
-checkVal = 111
+checkVal = randrange(1000)
+# Run after server start
+s.sendall('JoinGame|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
 while True :
     try :
-        newLight = b.getLight() > 500;
+        newLight = b.getLight() < 500;
         if newLight != oldLight :
             s.sendall('TurnShip|' + b.getDeviceName() + '|' + str(checkVal) + '|' + b.getVendorName())
 

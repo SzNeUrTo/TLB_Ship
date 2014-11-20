@@ -359,7 +359,7 @@ cc.Director = cc.Class.extend(/** @lends cc.Director# */{
             this._notificationNode.visit();
 
         if (this._displayStats)
-            this._showStats();
+            // this._showStats();
 
         if (this._afterVisitScene) this._afterVisitScene();
 

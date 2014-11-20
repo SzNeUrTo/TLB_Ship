@@ -13,8 +13,9 @@
         //SingleEngineFile:'',
         appFiles:[
             'src/GameLayer.js',
-            'src/Ship.js',     //add your own files in order here
-            'src/socket.io.js',
+            'src/Ship.js',
+            'src/Bullet.js' ,
+            'src/socket.io.js'   //add your own files in order here
 
         ]
     };
@@ -55,4 +56,3 @@
         //else if single file specified, load singlefile
     });
 })();
-

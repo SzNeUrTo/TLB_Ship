@@ -1,4 +1,5 @@
 var cocos2dApp = cc.Application.extend({
+
     config: document[ 'ccConfig' ],
 
     ctor: function( scene ) {
