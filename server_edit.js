@@ -1,4 +1,4 @@
-var PYHTON_HOST = '10.2.4.98'
+var PYHTON_HOST = '127.0.0.1'
 var PYTHON_PORT = 8081
 var SOCKETIO_PORT = 8080;
 var keys = {};
@@ -12,19 +12,19 @@ var screenWidth = 800;
 var screenHeight = 600;
 var shipSize = 64;
 var bulletSize = 4;
-var bulletSpeed = 20;
+var bulletSpeed = 10;
 var shipRunSpeed = 5;
 var shipTurnSpeed = 5;
 var gameStart = false;
 var gameEnd = false;
 var gameRemainingTime = 60;
 
-var bullet = {
-	x : -1,
-	y : -1,
-	angle : -1,
-	owner : 'GG'
-};
+//var bullet = {
+//	x : -1,
+//	y : -1,
+//	angle : -1,
+//	owner : 'GG'
+//};
 var isNot_initPosition = true;
 var isLetGo = false;
 // ---------------------------- server ---------------------------------------------
@@ -133,7 +133,7 @@ function initPlayerPositionAndAngle() {
 		for (var i = 0; i < players_index.length; i++) {
 			players[players_index[i]].x = screenWidth * i / players_index.length;
 			players[players_index[i]].y = screenHeight * i / players_index.length;
-			console.log('------> players x + ' + players[players_index[i]].x + ' | y = ' + players[players_index[i]].y);
+			//console.log('------> players x + ' + players[players_index[i]].x + ' | y = ' + players[players_index[i]].y);
 			// players[players_index[i]].angle = Math.floor((Math.random() * 360));
 			// players[players_index[i]].x = 200 * i ;
 			// players[players_index[i]].y = 200 * i ;
@@ -208,21 +208,20 @@ function updatePlayersAngle(i) {
 }
 
 function updatePlayersShooting(i) {
-	if (players[players_index[i]].shooting) {
+	if (players[players_index[i]].shooting && players[players_index[i]].lifepoint > 0) {
 		createBullet(players_index[i]);
 		players[players_index[i]].shooting = false;
 	}
 }
 
 function createBullet(players_index) {
-	var bullet = {
+	bullets.push({
 		x : players[players_index].x,
 		y : players[players_index].y,
 		angle : players[players_index].angle,
 		owner : players_index
-	};
-	bullets.push(bullet);
-	io.sockets.emit('createBullets', bullet);
+	});
+	//io.sockets.emit('createBullets', bullet);
 }
 
 function updateBullets() {
@@ -230,6 +229,8 @@ function updateBullets() {
 	bulletsCollideShip();
 	removeBullets();
 	bulletsCollideBorder();
+	console.log('bullet length = ' + bullets.length);
+	console.log('bulletRemover length = ' + bulletsRemover.length);
 	removeBullets();
 	//console.log('updateBullet');
 }
@@ -238,6 +239,7 @@ function bulletMoveMent() {
 		var rad = bullets[i].angle * Math.PI / 180;
 		bullets[i].x += bulletSpeed * Math.sin(rad);
 		bullets[i].y += bulletSpeed * Math.cos(rad);
+		//console.log('x = ' + bullets[i].x + '| y = ' + bullets[i].y);
 	}
 	sendDataToClient('updateBullets')
 }
@@ -246,8 +248,8 @@ function bulletsCollideShip() {
 	var sx, sy, bx, by;
 	for (var i = 0; i < bullets.length; i++) {
 		for (var j = 0; j < players_index.length; j++) {
-			c_sx = players[players_index[i]].x + shipSize / 2;
-			c_sy = players[players_index[i]].y + shipSize / 2;
+			c_sx = players[players_index[j]].x + shipSize / 2;
+			c_sy = players[players_index[j]].y + shipSize / 2;
 			c_bx = bullets[i].x + bulletSize / 2;
 			c_by = bullets[i].y + bulletSize / 2;
 			if (Math.abs(c_sx - c_bx) < shipSize / 2 + bulletSize / 2 
@@ -266,6 +268,7 @@ function bulletsCollideShip() {
 					//add to push [] remover
 					var bulletIndex = i;
 					bulletsRemover.push(bulletIndex);
+					console.log('My Bullet Add to Remover : Bullet CollideShip');
 				}
 			}
 		}
@@ -274,25 +277,28 @@ function bulletsCollideShip() {
 
 function bulletsCollideBorder() {
 	for (var i = 0; i < bullets.length; i++) {
-		if (bullets[i].x < 0 || bullets[i].y < 0 || bullets[i].x + bulletSize > screenWidth || bullets[i].y + bulletSize < screenHeight)
+		if (!(bullets[i].x > 0 && bullets[i].x < screenWidth - bulletSize && bullets[i].y > 0 && bullets[i].y < screenHeight - bulletSize)) {
 			var bulletIndex = i;
 			bulletsRemover.push(bulletIndex);
+			//console.log('collide border na kub');
+		}
 	}
 }
 
 function removeBullets() {
 	bulletsRemover.sort(function(a, b){return a-b});
-	sendDataToClient('removeBullets');
-	var index = 0;
-	while (index < bulletsRemover.length) {
-		arrayRemoveAtIndex(bullets, bulletsRemover[index] - index);
-		index++;
+	console.log(bulletsRemover);
+	//sendDataToClient('removeBullets');
+	var shiftIndex = 0;
+	while (bulletsRemover.length > 0) {
+		arrayRemoveAtIndex(bullets, bulletsRemover.splice(0, 1)[0] - shiftIndex);
+		shiftIndex++;
 	}
-	bulletsRemover = [];
+	//bulletsRemover = [];
 }
 
 function arrayRemoveAtIndex (arr, index) {
-	console.log("Remove" + arr.splice(index,1));
+	console.log("Remove" + arr.splice(index, 1)[0]);
 }
 
 function updatePlayersPosition(i) {
